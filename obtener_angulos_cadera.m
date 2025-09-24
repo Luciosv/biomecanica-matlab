@@ -1,4 +1,4 @@
-function AA = obtener_angulos_cadera(pelvis, muslo)
+function AA = obtener_angulos_cadera(pelvis, muslo, lado)
 
 normalize_vec = @(v) v ./ vecnorm(v, 2, 2);
 
@@ -15,8 +15,12 @@ AA.alpha = acosd(dot(I_art, pelvis.j, 2)) .* signo;
 %% Calculo de abduccion aduccion
 AA.beta = asind(dot(pelvis.k, muslo.i, 2));
 
+if (lado == 'i'), AA.beta = - AA.beta; end
+
 %% Calculo de rotaciones
 signo = dot(I_art, muslo.k, 2);
 signo = signo ./ abs(signo);
 
 AA.gamma = - acosd(dot(I_art, muslo.j, 2)) .* signo;
+
+if (lado == 'i'), AA.gamma = -AA.gamma; end

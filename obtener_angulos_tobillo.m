@@ -1,4 +1,4 @@
-function AA = obtener_angulos_tobillo(pierna, pie)
+function AA = obtener_angulos_tobillo(pierna, pie, lado)
 
 normalize_vec = @(v) v ./ vecnorm(v, 2, 2);
 
@@ -14,8 +14,12 @@ AA.alpha = - acosd(dot(I_art, pierna.i, 2)) .* signo;
 %%
 AA.beta = asind(dot(pierna.k, pie.i, 2));
 
+if (lado == 'i'), AA.beta = -AA.beta; end
+
 %%
 signo = dot(I_art, pie.k, 2);
 signo = signo ./ abs(signo);
 
 AA.gamma = acosd(dot(I_art, pie.j, 2)) .* signo;
+
+if (lado == 'i'), AA.gamma = -AA.gamma; end

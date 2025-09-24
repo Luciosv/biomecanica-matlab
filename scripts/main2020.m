@@ -9,7 +9,7 @@ clc
                                                                   %"Archivo" que es solamente el nombre del archivo que permite ver en el workspace el archivo sobre el que estoy trabajando
 
  
-[DerechaPlataforma1,PrimerFrame,UltimoFrame,FrameRHS1,FrameLHS1,FrameRHS2,FrameLHS2,FrameRTO,FrameLTO]=Ciclo2Pasos(Datos);
+Ciclo = Ciclo2Pasos(Datos);
 % La función "Ciclo2Pasos" Recibe como parámetro la estuctura de "Datos"
 % completa no la modifica, pero si devuelve los parametros convertidos en
 % frame (cuadros) en los que se producen los eventos de apoyo del taón y
@@ -18,14 +18,14 @@ clc
 %  una variable booleana si pisa primero con el pie derecho
 
 
-AntesHS=10; % es es parametro de cuantos datos antes de el primer contacto del pie 
+Ciclo.AntesHS=10; % es es parametro de cuantos datos antes de el primer contacto del pie 
 %que pisa primero se inicia el recorte de los datos para pasar
 % como parámetro a la función "RecortaDatos"
-DespuesHS=10;
+Ciclo.DespuesHS=10;
 % es es parametro de cuantos datos despues del segundo contacto del pie 
 % que pisa en  segundo término se inicia el recorte de los datos para pasar
 % como parámetro a la función "RecortaDatos"
-Datos=RecortaDatos(Datos,PrimerFrame-AntesHS,UltimoFrame+DespuesHS);
+Datos=RecortaDatos(Datos, Ciclo.PrimerFrame - Ciclo.AntesHS, Ciclo.UltimoFrame + Ciclo.DespuesHS);
 % esta función recorta los datos a un paso de ambos pies + la cantidad de
 % datos definidas por "AntesHS" y "DespuesHS" 
 % IMPORTANTE: tener en cuenta que esta escrita con los marcadores
@@ -70,21 +70,54 @@ p = Datos.Pasada.Marcadores.Filtrados.Valores.sacrum;
 
 
 %% -------------------- CALCULO DE LOS ANGULOS ARTICULARES --------------------
-AA_cadera_d = obtener_angulos_cadera(SL.pelvis, SL.muslo_d);
-AA_cadera_i = obtener_angulos_cadera(SL.pelvis, SL.muslo_i);
+AA.cadera_d = obtener_angulos_cadera(SL.pelvis, SL.muslo_d, 'd');
+AA.cadera_i = obtener_angulos_cadera(SL.pelvis, SL.muslo_i, 'i');
 
-AA_rodilla_d = obtener_angulos_rodilla(SL.muslo_d, SL.pierna_d);
-AA_rodilla_i = obtener_angulos_rodilla(SL.muslo_i, SL.pierna_i);
+AA.rodilla_d = obtener_angulos_rodilla(SL.muslo_d, SL.pierna_d, 'd');
+AA.rodilla_i = obtener_angulos_rodilla(SL.muslo_i, SL.pierna_i, 'i');
 
-AA_tobillo_d = obtener_angulos_tobillo(SL.pierna_d, SL.pie_d);
-AA_tobillo_i = obtener_angulos_tobillo(SL.pierna_i, SL.pie_i);
+AA.tobillo_d = obtener_angulos_tobillo(SL.pierna_d, SL.pie_d, 'd');
+AA.tobillo_i = obtener_angulos_tobillo(SL.pierna_i, SL.pie_i, 'i');
 
 %% -------------------- GRAFICACION DE LOS ANGULOS ARTICULARES --------------------
+graficar_angulos(AA.cadera_d, AA.cadera_i, Ciclo, 'Angulo Cadera');
+
+graficar_angulos(AA.rodilla_d, AA.rodilla_i, Ciclo, 'Angulo Rodilla');
+
+graficar_angulos(AA.tobillo_d, AA.tobillo_i, Ciclo, 'Angulo Tobillo');
 
 
+%% -------------------- CALCULAR LOS ANGULOS DE EULER --------------------
+AE.pelvis = obtener_angulos_euler(SL.pelvis.i, SL.pelvis.j, SL.pelvis.k);
+
+AE.muslo_d = obtener_angulos_euler(SL.muslo_d.i, SL.muslo_d.j, SL.muslo_d.k);
+AE.muslo_i = obtener_angulos_euler(SL.muslo_i.i, SL.muslo_i.j, SL.muslo_i.k);
+
+AE.pierna_d = obtener_angulos_euler(SL.pierna_d.i, SL.pierna_d.j, SL.pierna_d.k);
+AE.pierna_i = obtener_angulos_euler(SL.pierna_i.i, SL.pierna_i.j, SL.pierna_i.k);
+
+AE.pie_d = obtener_angulos_euler(SL.pie_d.i, SL.pie_d.j, SL.pie_d.k);
+AE.pie_i = obtener_angulos_euler(SL.pie_i.i, SL.pie_i.j, SL.pie_i.k);
 
 
+%% -------------------- CALCULAR LAS VELOCIDADES ANGULARES --------------------
+W.pelvis = obtener_velocidad_angular(AE.pelvis);
 
+W.muslo_d = obtener_velocidad_angular(AE.muslo_d);
+W.muslo_i = obtener_velocidad_angular(AE.muslo_i);
+
+W.pierna_d = obtener_velocidad_angular(AE.pierna_d);
+W.pierna_i = obtener_velocidad_angular(AE.pierna_i);
+
+W.pie_d = obtener_velocidad_angular(AE.pie_d);
+W.pie_i = obtener_velocidad_angular(AE.pie_i);
+
+%% -------------------- GRAFICAR LAS VELOCIDADES ANGULARES --------------------
+graficar_velocidades_angulares(W.muslo_d, W.muslo_i, Ciclo, 'Angulo Muslo');
+
+graficar_velocidades_angulares(W.pierna_d, W.pierna_i, Ciclo, 'Angulo Pierna');
+
+graficar_velocidades_angulares(W.pie_d, W.pie_i, Ciclo, 'Angulo Pie');
 
 %VectoresConFor(Datos); % Esta función sirve para calcular un vector entre dos puntos, 
 % los asis izquierdo y derecho en el espacio 3D y lo grafica. También grafica solapado con ese mismo vector 
