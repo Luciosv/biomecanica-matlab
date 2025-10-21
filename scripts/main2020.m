@@ -169,12 +169,24 @@ fuerza_distal = zeros(522,3);
 FA.tobillo_d = calcular_fuerza_proximal(MS.pie, aCM.pie_d, fuerza_distal, fuerza_externa_d);
 FA.tobillo_i = calcular_fuerza_proximal(MS.pie, aCM.pie_i, fuerza_distal, fuerza_externa_i);
 
-FA.rodilla_d = calcular_fuerza_proximal(MS.pierna, aCM.pierna_d, FA.tobillo_d, zeros(522,3));
-FA.rodilla_i = calcular_fuerza_proximal(MS.pierna, aCM.pierna_i, FA.tobillo_i, zeros(522,3));
+FA.rodilla_d = calcular_fuerza_proximal(MS.pierna, aCM.pierna_d, -FA.tobillo_d, zeros(522,3));
+FA.rodilla_i = calcular_fuerza_proximal(MS.pierna, aCM.pierna_i, -FA.tobillo_i, zeros(522,3));
 
-FA.cadera_d = calcular_fuerza_proximal(MS.muslo, aCM.muslo_d, FA.rodilla_d, zeros(522,3));
-FA.cadera_i = calcular_fuerza_proximal(MS.muslo, aCM.muslo_i, FA.rodilla_i, zeros(522,3));
+FA.cadera_d = calcular_fuerza_proximal(MS.muslo, aCM.muslo_d, -FA.rodilla_d, zeros(522,3));
+FA.cadera_i = calcular_fuerza_proximal(MS.muslo, aCM.muslo_i, -FA.rodilla_i, zeros(522,3));
 
 %% -------------------- GRAFICAR FUERZAS ARTICULARES --------------------
-graficar_fuerzas_articulares(FA, Ciclo);
+% primero paso a los planos anatomicos con los versores k proximal, i
+% distal y Iart (k x i)
+
+FAanat.tobillo_d = pasar_a_plano_anatomico(FA.tobillo_d, SL.pie_d.i, SL.pierna_d.k);
+FAanat.tobillo_i = pasar_a_plano_anatomico(FA.tobillo_i, SL.pie_i.i, SL.pierna_i.k);
+
+FAanat.rodilla_d = pasar_a_plano_anatomico(FA.rodilla_d, SL.pierna_d.i, SL.muslo_d.k);
+FAanat.rodilla_i = pasar_a_plano_anatomico(FA.rodilla_i, SL.pierna_i.i, SL.muslo_i.k);
+
+FAanat.cadera_d = pasar_a_plano_anatomico(FA.cadera_d, SL.muslo_d.i, SL.pelvis.k);
+FAanat.cadera_i = pasar_a_plano_anatomico(FA.cadera_i, SL.muslo_i.i, SL.pelvis.k);
+
+graficar_fuerzas_articulares(FAanat, Ciclo);
 
