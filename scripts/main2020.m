@@ -60,8 +60,8 @@ p_l_heel = Datos.Pasada.Marcadores.Filtrados.Valores.l_heel;
 CM = calcular_centros_masa(CA, p_r_heel, p_l_heel);
 
 % grafica i,j,k
-graficar_vectores_con_posicion(CM.r_thigh_cg, SL.muslo_i.i, SL.muslo_i.j, SL.muslo_i.k);
-graficar_vectores_con_posicion(CM.r_thigh_cg, SL.muslo_d.i, SL.muslo_d.j, SL.muslo_d.k);
+graficar_vectores_con_posicion(CM.muslo_d, SL.muslo_i.i, SL.muslo_i.j, SL.muslo_i.k);
+graficar_vectores_con_posicion(CM.muslo_d, SL.muslo_d.i, SL.muslo_d.j, SL.muslo_d.k);
 
 p = Datos.Pasada.Marcadores.Filtrados.Valores.sacrum;
 %graficar_vectores_con_posicion(p, SL.pelvis.i, SL.pelvis.j, SL.pelvis.k);
@@ -80,11 +80,11 @@ AA.tobillo_d = obtener_angulos_tobillo(SL.pierna_d, SL.pie_d, 'd');
 AA.tobillo_i = obtener_angulos_tobillo(SL.pierna_i, SL.pie_i, 'i');
 
 %% -------------------- GRAFICACION DE LOS ANGULOS ARTICULARES --------------------
-graficar_angulos(AA.cadera_d, AA.cadera_i, Ciclo, 'Angulo Cadera');
+%graficar_angulos(AA.cadera_d, AA.cadera_i, Ciclo, 'Angulo Cadera');
 
-graficar_angulos(AA.rodilla_d, AA.rodilla_i, Ciclo, 'Angulo Rodilla');
+%graficar_angulos(AA.rodilla_d, AA.rodilla_i, Ciclo, 'Angulo Rodilla');
 
-graficar_angulos(AA.tobillo_d, AA.tobillo_i, Ciclo, 'Angulo Tobillo');
+%graficar_angulos(AA.tobillo_d, AA.tobillo_i, Ciclo, 'Angulo Tobillo');
 
 
 %% -------------------- CALCULAR LOS ANGULOS DE EULER --------------------
@@ -113,37 +113,68 @@ W.pie_d = obtener_velocidad_angular(AE.pie_d);
 W.pie_i = obtener_velocidad_angular(AE.pie_i);
 
 %% -------------------- GRAFICAR LAS VELOCIDADES ANGULARES --------------------
-graficar_velocidades_angulares(W.muslo_d, W.muslo_i, Ciclo, 'Angulo Muslo');
 
-graficar_velocidades_angulares(W.pierna_d, W.pierna_i, Ciclo, 'Angulo Pierna');
+graficar_velocidades_angulares(W, Ciclo);
 
-graficar_velocidades_angulares(W.pie_d, W.pie_i, Ciclo, 'Angulo Pie');
+%% -------------------- CALCULAR MATRICES DE INERCIA --------------------
+MI.pie = zeros(3,3);
+MI.pierna = zeros(3,3);
+MI.muslo = zeros(3,3);
 
-%VectoresConFor(Datos); % Esta función sirve para calcular un vector entre dos puntos, 
-% los asis izquierdo y derecho en el espacio 3D y lo grafica. También grafica solapado con ese mismo vector 
-% en otro color  el vector convertido a versor unitario (1 metro de longitud)  
-% asimismo  usando el producto cruz calcula un vector perpendicular a tres
-% puntos sacro, asis izquierdo y derecho y de igual forma lo grafica en 3D
-% como vector y como versor unitario en otro color se grafica en una
-% segunda figura IMPORTANTE: Todo este código es usando bucles CON "for"
-% para la graficación no se utiliza una función aparte lo que podría
-% resultar conveniente
-% IMPORTANTE2: tener en cuenta que esta escrita con los marcadores
-% organizados en una estructura "Datos.Pasada.Marcadores.Crudos" esto puede
-% haber definido usted que sea otra forma de estructura, debe adaptarla
+x = [Datos.antropometria.PESO.Valor, Datos.antropometria.ALTURA.Valor];
 
-%VectoresSinFor(Datos);% Esta función sirve para calcular un vector entre dos puntos, 
-% los asis izquierdo y derecho en el espacio 3D y lo grafica. También grafica solapado con ese mismo vector 
-% en otro color el vector convertido a versor unitario (1 metro de longitud)  
-% asimismo, usando el producto cruz calcula un vector perpendicular a tres
-% puntos sacro, asis izquierdo y derecho y de igual forma lo grafica en 3D
-% como vector y como versor unitario en otro color se grafica en la misma
-% figura. Finalmente calcula un tercer versor perpendicular a los dos
-% anteriores lo que daría un sistema de tres versores ortonormles entre sí.
-% Este tercer versor se grafica también todo en una misma figura.
-% IMPORTANTE: Todo este código es usando "SIN" usar bucles con "for"
-% esto requiere dos funciones adicionales para la graficación no se utiliza una función 
-% aparte lo que podría resultar conveniente      
-% IMPORTANTE2: tener en cuenta que esta escrita con los marcadores
-% organizados en una estructura "Datos.Pasada.Marcadores.Crudos" esto puede
-% haber definido usted que sea otra forma de estructura, debe adaptarla
+% Para el eje antero-posterior (VERSOR J)
+MI.pie(2,2) = calcular_parametro_ecZS([-100, 0.480, 0.626], x);
+MI.pierna(2,2) = calcular_parametro_ecZS([-1105, 4.59, 6.63], x);
+MI.muslo(2,2) = calcular_parametro_ecZS([-3557, 31.7, 18.61], x);
+
+% Para el eje medial-lateral (VERSOR K)
+MI.pie(3,3) = calcular_parametro_ecZS([-97.09, 0.414, 0.614], x);
+MI.pierna(3,3) = calcular_parametro_ecZS([-1152, 4.594, 6.815], x);
+MI.muslo(3,3) = calcular_parametro_ecZS([-3690, 32.02, 19.24], x);
+
+% Para el eje longitudinal (VERSOR I)
+MI.pie(1,1) = calcular_parametro_ecZS([-15.48, 0.144, 0.088], x);
+MI.pierna(1,1) = calcular_parametro_ecZS([-70.5, 1.134, 0.3], x);
+MI.muslo(1,1) = calcular_parametro_ecZS([-13.5, 11.3, -2.28], x);
+
+% Divido todo por 100^2 para pasar de Kg * cm^2 a Kg * m^2
+MI.pie = MI.pie ./ 100^2;
+MI.pierna = MI.pierna ./ 100^2;
+MI.muslo = MI.muslo ./ 100^2;
+
+%% -------------------- CALCULAR MASAS DE LOS SEGMENTOS --------------------
+MS.pie = calcular_parametro_ecZS([-0.829, 0.0077, 0.0073], x);
+MS.pierna = calcular_parametro_ecZS([-1.592, 0.0362, 0.0121], x);
+MS.muslo = calcular_parametro_ecZS([-2.649, 0.1463, 0.0137], x);
+
+%% -------------------- CALCULAR LAS ACELERACIONES LINEALES A PARTIR DE LOS CENTROS DE MASA --------------------
+aCM.muslo_d = calcular_derivada(calcular_derivada(CM.muslo_d,fm),fm);
+aCM.muslo_i = calcular_derivada(calcular_derivada(CM.muslo_i,fm),fm);
+
+aCM.pierna_d = calcular_derivada(calcular_derivada(CM.pierna_d,fm),fm);
+aCM.pierna_i = calcular_derivada(calcular_derivada(CM.pierna_i,fm),fm);
+
+aCM.pie_d = calcular_derivada(calcular_derivada(CM.pie_d,fm),fm);
+aCM.pie_i = calcular_derivada(calcular_derivada(CM.pie_i,fm),fm);
+
+%% -------------------- CALCULAR FUERZAS ARTICULARES --------------------
+FP = recortar_datos_plataforma(Datos,Ciclo);
+
+fuerza_externa_d = [FP.P2.Fx, FP.P2.Fy, FP.P2.Fz];
+fuerza_externa_i = [FP.P1.Fx, FP.P1.Fy, FP.P1.Fz];
+
+fuerza_distal = zeros(522,3);
+
+FA.tobillo_d = calcular_fuerza_proximal(MS.pie, aCM.pie_d, fuerza_distal, fuerza_externa_d);
+FA.tobillo_i = calcular_fuerza_proximal(MS.pie, aCM.pie_i, fuerza_distal, fuerza_externa_i);
+
+FA.rodilla_d = calcular_fuerza_proximal(MS.pierna, aCM.pierna_d, FA.tobillo_d, zeros(522,3));
+FA.rodilla_i = calcular_fuerza_proximal(MS.pierna, aCM.pierna_i, FA.tobillo_i, zeros(522,3));
+
+FA.cadera_d = calcular_fuerza_proximal(MS.muslo, aCM.muslo_d, FA.rodilla_d, zeros(522,3));
+FA.cadera_i = calcular_fuerza_proximal(MS.muslo, aCM.muslo_i, FA.rodilla_i, zeros(522,3));
+
+%% -------------------- GRAFICAR FUERZAS ARTICULARES --------------------
+graficar_fuerzas_articulares(FA, Ciclo);
+

@@ -1,8 +1,7 @@
 function w_seg = obtener_velocidad_angular (seg)
 
 %% CALCULO LA DERIVADA DEL ANGULO EULER
-
-der.alpha = diff([seg.alpha; seg.alpha(end)]) * 340;
+der.alpha = diff([seg.alpha; seg.alpha(end)]) * 340; 
 der.beta = diff([seg.beta; seg.beta(end)]) * 340;
 der.gamma = diff([seg.gamma; seg.gamma(end)]) * 340;
 
