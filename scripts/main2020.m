@@ -188,5 +188,10 @@ FAanat.rodilla_i = pasar_a_plano_anatomico(FA.rodilla_i, SL.pierna_i.i, SL.muslo
 FAanat.cadera_d = pasar_a_plano_anatomico(FA.cadera_d, SL.muslo_d.i, SL.pelvis.k);
 FAanat.cadera_i = pasar_a_plano_anatomico(FA.cadera_i, SL.muslo_i.i, SL.pelvis.k);
 
+% el medial lateral izquierdo, va negativo
+FAanat.tobillo_i.med_lat = FAanat.tobillo_i.med_lat * -1;
+FAanat.rodilla_i.med_lat = FAanat.rodilla_i.med_lat * -1;
+FAanat.cadera_i.med_lat = FAanat.cadera_i.med_lat * -1;
+
 graficar_fuerzas_articulares(FAanat, Ciclo);
 
