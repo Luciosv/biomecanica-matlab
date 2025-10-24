@@ -161,13 +161,13 @@ aCM.pie_i = calcular_derivada(calcular_derivada(CM.pie_i,fm),fm);
 %% -------------------- CALCULAR FUERZAS ARTICULARES --------------------
 FP = recortar_datos_plataforma(Datos,Ciclo);
 
-fuerza_externa_d = [FP.P2.Fx, FP.P2.Fy, FP.P2.Fz];
-fuerza_externa_i = [FP.P1.Fx, FP.P1.Fy, FP.P1.Fz];
+f_plat_d = [FP.P2.Fx, FP.P2.Fy, FP.P2.Fz];
+f_plat_i = [FP.P1.Fx, FP.P1.Fy, FP.P1.Fz];
 
 fuerza_distal = zeros(522,3);
 
-FA.tobillo_d = calcular_fuerza_proximal(MS.pie, aCM.pie_d, fuerza_distal, fuerza_externa_d);
-FA.tobillo_i = calcular_fuerza_proximal(MS.pie, aCM.pie_i, fuerza_distal, fuerza_externa_i);
+FA.tobillo_d = calcular_fuerza_proximal(MS.pie, aCM.pie_d, fuerza_distal, f_plat_d);
+FA.tobillo_i = calcular_fuerza_proximal(MS.pie, aCM.pie_i, fuerza_distal, f_plat_i);
 
 FA.rodilla_d = calcular_fuerza_proximal(MS.pierna, aCM.pierna_d, -FA.tobillo_d, zeros(522,3));
 FA.rodilla_i = calcular_fuerza_proximal(MS.pierna, aCM.pierna_i, -FA.tobillo_i, zeros(522,3));
@@ -194,4 +194,76 @@ FAanat.rodilla_i.med_lat = FAanat.rodilla_i.med_lat * -1;
 FAanat.cadera_i.med_lat = FAanat.cadera_i.med_lat * -1;
 
 graficar_fuerzas_articulares(FAanat, Ciclo);
+
+
+%% -------------------- CALCULAR MOMENTOS ARTICULARES --------------------
+
+% primero derivo las velocidades angulares
+aW.pie_d = calcular_derivada(W.pie_d, fm);
+aW.pie_i = calcular_derivada(W.pie_i, fm);
+
+aW.pierna_d = calcular_derivada(W.pierna_d, fm);
+aW.pierna_i = calcular_derivada(W.pierna_i, fm);
+
+aW.muslo_d = calcular_derivada(W.muslo_d, fm);
+aW.muslo_i = calcular_derivada(W.muslo_i, fm);
+
+p = calcular_distancia_momentos(CM, CA, FP);
+
+% PIE
+% calculo el momento residual
+
+M_plat_d = [FP.P2.Mx, FP.P2.My, FP.P2.Mz];
+M_plat_i = [FP.P1.Mx, FP.P1.My, FP.P1.Mz];
+
+Mres.tobillo_d = calcular_momento_residual(M_plat_d, p.pie_d.prox, FA.tobillo_d, p.pie_d.dist, f_plat_d);
+Mres.tobillo_i = calcular_momento_residual(M_plat_i, p.pie_i.prox, FA.tobillo_i, p.pie_i.dist, f_plat_i);
+
+M.tobillo_d = calcular_momento_coord_glob(aW.pie_d, SL.pie_d.i, SL.pie_d.j, SL.pie_d.k, Mres.pie_d);
+M.tobillo_i = calcular_momento_coord_glob(aW.pie_i, SL.pie_i.i, SL.pie_i.j, SL.pie_i.k, Mres.pie_i);
+
+
+% PIERNA
+
+Mres.rodilla_d = calcular_momento_residual(-M.tobillo_d, ...
+                                          p.pierna_d.prox, FA.rodilla_d, ...
+                                          -p.pierna_d.dist, FA.tobillo_d);
+
+Mres.rodilla_i = calcular_momento_residual(-M.tobillo_i, ...
+                                          p.pierna_i.prox, FA.rodilla_i, ...
+                                          -p.pierna_i.dist, FA.tobillo_i);                                     
+
+                                      
+M.rodilla_d = calcular_momento_coord_glob(aW.pierna_d, SL.pierna_d.i, SL.pierna_d.j, SL.pierna_d.k, Mres.pierna_d);
+M.rodilla_i = calcular_momento_coord_glob(aW.pierna_i, SL.pierna_i.i, SL.pierna_i.j, SL.pierna_i.k, Mres.pierna_i);
+
+% MUSLO
+
+Mres.cadera_d = calcular_momento_residual(-M.rodilla_d, ...
+                                         p.muslo_d.prox, FA.cadera_d, ...
+                                         -p.muslo_d.dist, FA.rodilla_d);
+                                     
+Mres.cadera_i = calcular_momento_residual(-M.rodilla_i, ...
+                                         p.muslo_i.prox, FA.cadera_i, ...
+                                         -p.muslo_i.dist, FA.rodilla_i);                                    
+
+M.cadera_d = calcular_momento_coord_glob(aW.muslo_d, SL.muslo_d.i, SL.muslo_d.j, SL.muslo_d.k, Mres.muslo_d);
+M.cadera_i = calcular_momento_coord_glob(aW.muslo_i, SL.muslo_i.i, SL.muslo_i.j, SL.muslo_i.k, Mres.muslo_i);
+
+
+%% -------------------- GRAFICAR MOMENTOS ARTICULARES --------------------
+
+% primero paso a los planos anatomicos con los versores k proximal, i
+% distal y Iart (k x i)
+
+Manat.tobillo_d = pasar_a_plano_anatomico(M.tobillo_d, SL.pie_d.i, SL.pierna_d.k);
+Manat.tobillo_i = pasar_a_plano_anatomico(M.tobillo_i, SL.pie_i.i, SL.pierna_i.k);
+
+Manat.rodilla_d = pasar_a_plano_anatomico(M.rodilla_d, SL.pierna_d.i, SL.muslo_d.k);
+Manat.rodilla_i = pasar_a_plano_anatomico(M.rodilla_i, SL.pierna_i.i, SL.muslo_i.k);
+
+Manat.cadera_d = pasar_a_plano_anatomico(M.cadera_d, SL.muslo_d.i, SL.muslo_d.k);
+Manat.cadera_i = pasar_a_plano_anatomico(M.cadera_i, SL.muslo_i.i, SL.muslo_i.k);
+
+graficar_momentos_articulares(Manat, Ciclo);
 
